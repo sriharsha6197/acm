@@ -13,11 +13,21 @@ resource "aws_acm_certificate" "cert" {
 variable "env" {
   
 }
-resource "aws_route53_record" "main" {
-  allow_overwrite = true
-  name            = "${var.env}.certificate"
-  records         = [aws_acm_certificate.cert.validation_method]
-  ttl             = 60
-  type            = "CNAME"
-  zone_id         = data.aws_route53_zone.selected.zone_id
+output "validation_records" {
+  value = aws_acm_certificate.cert.domain_validation_options
+}
+resource "aws_route53_record" "acm_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.example.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      type   = dvo.resource_record_type
+      value  = dvo.resource_record_value
+    }
+  }
+
+  zone_id = data.aws_route53_zone.selected.zone_id
+  name    = each.value.name
+  type    = each.value.type
+  ttl     = 300
+  records = [each.value.value]
 }
