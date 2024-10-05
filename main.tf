@@ -1,5 +1,5 @@
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "sriharsha.cloudns.ch"
+  domain_name       = "harsha.shop"
   validation_method = "DNS"
 
   tags = {
